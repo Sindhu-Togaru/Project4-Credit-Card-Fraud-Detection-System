@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Fraud Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a, #2563eb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 15px;
+            color: #fff;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 850px;
+        }
+
+        .app-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .app-title h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .app-title p {
+            font-size: 1rem;
+            color: #dbeafe;
+            opacity: 0.95;
+        }
+
+        .container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.28);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            margin-bottom: 22px;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #e0f2fe;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder {
+            color: #dbeafe;
+        }
+
+        select option {
+            color: #000;
+        }
+
+        input:focus, select:focus {
+            border-color: #93c5fd;
+            background: rgba(255, 255, 255, 0.22);
+            box-shadow: 0 0 0 4px rgba(147, 197, 253, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn {
+            grid-column: span 2;
+            margin-top: 8px;
+            padding: 15px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 18px rgba(34, 197, 94, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(34, 197, 94, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .result-box {
+            margin-top: 28px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+        }
+
+        .result-box h2 {
+            text-align: center;
+            margin-bottom: 18px;
+            font-size: 1.4rem;
+            color: #ffffff;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.16);
+            border-radius: 18px;
+            padding: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .result-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #dbeafe;
+        }
+
+        .result-text {
+            font-size: 1rem;
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .fraud {
+            color: #ff6b6b;
+            font-weight: 700;
+        }
+
+        .safe {
+            color: #4ade80;
+            font-weight: 700;
+        }
+
+        .probability {
+            margin-top: 8px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .progress-bar {
+            margin-top: 10px;
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+        }
+
+        .error-box {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            color: #fecaca;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .footer-note {
+            margin-top: 18px;
+            text-align: center;
+            color: #dbeafe;
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 18px;
+            }
+
+            .app-title h1 {
+                font-size: 1.8rem;
+            }
+
+            form {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width,
+            .submit-btn {
+                grid-column: span 1;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <div class="app-title">
+            <h1>💳 Credit Card Fraud Detection System</h1>
+            <p>Analyze transaction details and predict whether the transaction is Fraud or Non-Fraud</p>
+        </div>
+
+        <div class="container">
+            <div class="section-title">Enter Transaction Details</div>
+
+            <form action="/predict" method="POST">
+                <div class="form-group">
+                    <label for="amount">Transaction Amount</label>
+                    <input type="number" step="0.01" name="amount" id="amount" placeholder="Enter amount" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="transaction_hour">Transaction Hour (0 - 23)</label>
+                    <input type="number" name="transaction_hour" id="transaction_hour" min="0" max="23" placeholder="e.g. 14" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="foreign_transaction">Foreign Transaction</label>
+                    <select name="foreign_transaction" id="foreign_transaction" required>
+                        <option value="">Select option</option>
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="location_mismatch">Location Mismatch</label>
+                    <select name="location_mismatch" id="location_mismatch" required>
+                        <option value="">Select option</option>
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="device_trust_score">Device Trust Score</label>
+                    <input type="number" step="0.01" name="device_trust_score" id="device_trust_score" placeholder="Enter trust score" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="velocity_last_24h">Velocity Last 24 Hours</label>
+                    <input type="number" step="0.01" name="velocity_last_24h" id="velocity_last_24h" placeholder="Enter transaction velocity" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cardholder_age">Cardholder Age</label>
+                    <input type="number" name="cardholder_age" id="cardholder_age" placeholder="Enter age" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="merchant_category">Merchant Category</label>
+                    <select name="merchant_category" id="merchant_category" required>
+                        <option value="">Select Merchant Category</option>
+                        {% for category in merchant_categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">🔍 Predict Fraud</button>
+            </form>
+
+            {% if lr_result and rf_result %}
+            <div class="result-box">
+                <h2>Prediction Results</h2>
+
+                <div class="result-grid">
+                    <div class="result-card">
+                        <h3>Logistic Regression</h3>
+                        <div class="result-text">
+                            Prediction:
+                            <span class="{{ 'fraud' if lr_result == 'Fraud' else 'safe' }}">{{ lr_result }}</span>
+                        </div>
+                        <div class="probability">Fraud Probability: {{ lr_prob }}%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ lr_prob }}%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Random Forest</h3>
+                        <div class="result-text">
+                            Prediction:
+                            <span class="{{ 'fraud' if rf_result == 'Fraud' else 'safe' }}">{{ rf_result }}</span>
+                        </div>
+                        <div class="probability">Fraud Probability: {{ rf_prob }}%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ rf_prob }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="error-box">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <div class="footer-note">
+                Built with Flask, Machine Learning, Logistic Regression, and Random Forest
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
